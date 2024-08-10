@@ -1,0 +1,17 @@
+parameters:
+  available-codes:
+    EUR:
+      buy: -0.05
+      sell: 0.07
+    USD:
+      buy: -0.05
+      sell: 0.07
+    CZK:
+      buy: false
+      sell: 0.15
+    IDR:
+      buy: false
+      sell: 0.15
+    BRL:
+      buy: false
+      sell: 0.15

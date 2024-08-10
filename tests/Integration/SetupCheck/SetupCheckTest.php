@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\SetupCheck;
+namespace Tests\Integration\SetupCheck;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 

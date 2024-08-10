@@ -28,3 +28,17 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Services\:
+        resource: '../src/App/Services'
+        autowire: true
+
+    App\Services\ExchangeRates\Strategies\NbpStrategy:
+        arguments:
+            $client: '@http_client'
+            $baseUrl: '%env(NBP_API_BASE_URL)%'
+
+    App\Services\ExchangeRates\ExchangeRatesService:
+        arguments:
+            $strategy: '@App\Services\ExchangeRates\Strategies\NbpStrategy'
+            $availableCodes: '%available-codes%'
