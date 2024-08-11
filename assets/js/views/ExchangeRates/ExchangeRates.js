@@ -7,7 +7,7 @@ class ExchangeRates extends Component {
 
     state = {
         loading: true,
-        selectedDate: null,
+        selectedDate: undefined,
         todayRates: [],
         ratesByDate: [],
         error: {
@@ -18,15 +18,18 @@ class ExchangeRates extends Component {
     componentDidMount() {
         const selectedDate = this.getSelectedDateFromURL();
 
-        this.setState({selectedDate}, this.fetchDefaultExchangeRates);
+        this.fetchDefaultExchangeRates()
+
+        if (selectedDate) {
+            this.setSelectedDate(selectedDate)
+        }
     }
 
     getSelectedDateFromURL() {
         const {location} = this.props;
         const urlParams = new URLSearchParams(location.search);
-        const timestamp = urlParams.get('byDate');
 
-        return timestamp && !isNaN(timestamp) ? timestamp : null;
+        return urlParams.get('byDate');
     }
 
     getBaseUrl() {
@@ -35,13 +38,19 @@ class ExchangeRates extends Component {
 
     async fetchExchangeRates(date = null) {
         try {
-            const url = `${this.getBaseUrl()}/api/exchange-rates${date ? `?byDate=${date}` : ''}`;
+            const url = `${this.getBaseUrl()}/api/exchange-rates${date ? `?byDate=${this.dateToTimestamp(date)}` : ''}`;
             const response = await axios.get(url);
 
             return response.data.data;
         } catch (error) {
             throw new Error(error.response?.data?.error || 'An error occurred while fetching exchange rates.');
         }
+    }
+
+    dateToTimestamp(date) {
+        date = new Date(date)
+
+        return Math.floor(date.getTime() / 1000);
     }
 
     async fetchDefaultExchangeRates() {
@@ -78,16 +87,21 @@ class ExchangeRates extends Component {
 
         try {
             const ratesByDate = await this.fetchExchangeRates(date);
-            this.setState({ratesByDate});
+            this.setState({
+                ratesByDate,
+                error: {
+                    message: null
+                },
+            });
         } catch (error) {
-            this.setState({error: {message: error.message}});
+            this.setState({error: {message: error.message}, ratesByDate: []});
         } finally {
             this.setState({loading: false});
         }
-    };
+    }
 
     render() {
-        const {loading, error, todayRates, ratesByDate} = this.state
+        const {loading, error, todayRates, ratesByDate, selectedDate} = this.state
 
         return (
             <div>
@@ -98,7 +112,10 @@ class ExchangeRates extends Component {
                                 <h2 className="text-center my-5"><span>Kursy walut</span> by Sviatoslav Zhovtiak</h2>
 
                                 <div>
-                                    <DatePicker onSelectDate={this.setSelectedDate.bind(this)} disabled={loading}/>
+                                    <DatePicker
+                                        onSelectDate={this.setSelectedDate.bind(this)}
+                                        selectedDate={selectedDate}
+                                    />
                                     {error.message && <div className="alert alert-danger" role="alert">
                                         {error.message}
                                     </div>}
@@ -109,7 +126,11 @@ class ExchangeRates extends Component {
                                         <span className="fa fa-spin fa-spinner fa-4x"></span>
                                     </div>
                                 ) : (
-                                    <ExchangeRatesTable ratesByDate={ratesByDate} todayRates={todayRates}/>
+                                    <ExchangeRatesTable
+                                        ratesByDate={ratesByDate}
+                                        todayRates={todayRates}
+                                        selectedDate={selectedDate}
+                                    />
                                 )}
                             </div>
                         </div>

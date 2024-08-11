@@ -31,7 +31,7 @@ class ExchangeRatesController extends AbstractController
 
         if($date && !$this->validateDate($date)) {
             return new JsonResponse([
-                'error' => 'Invalid date. Expected to be valid timestamp after 01.01.2023 and before today.',
+                'error' => "Invalid date {$date->format('Y-m-d')}. Expected to be valid timestamp after 01.01.2023 and before today.",
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 

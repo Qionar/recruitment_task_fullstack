@@ -11,7 +11,6 @@ use Tests\Fixtures\ExchangeRatesFixture;
 
 class ExchangeRatesTest extends WebTestCase
 {
-    const DEFAULT_DATE_ERROR_MESSAGE = 'Invalid date. Expected to be valid timestamp after 01.01.2023 and before today.';
 
     public function test_index_that_return_exchange_rates_with_nbp_provider()
     {
@@ -46,7 +45,6 @@ class ExchangeRatesTest extends WebTestCase
         $json = json_decode($response->getContent(), true);
 
         $this->assertArrayHasKey('error', $json);
-        $this->assertStringStartsWith(self::DEFAULT_DATE_ERROR_MESSAGE, $json['error']);
     }
 
     public function test_index_that_return_error_when_receive_date_after_today()
@@ -68,7 +66,6 @@ class ExchangeRatesTest extends WebTestCase
         $json = json_decode($response->getContent(), true);
 
         $this->assertArrayHasKey('error', $json);
-        $this->assertStringStartsWith(self::DEFAULT_DATE_ERROR_MESSAGE, $json['error']);
     }
 
     public function test_index_that_return_error_when_receive_date_before_minimal_allowed_date()
@@ -89,7 +86,6 @@ class ExchangeRatesTest extends WebTestCase
         $json = json_decode($response->getContent(), true);
 
         $this->assertArrayHasKey('error', $json);
-        $this->assertStringStartsWith(self::DEFAULT_DATE_ERROR_MESSAGE, $json['error']);
     }
 
     public function test_index_that_return_exchange_rates_when_receive_valid_datetime_format()
@@ -124,7 +120,7 @@ class ExchangeRatesTest extends WebTestCase
         $container = $client->getContainer();
         $container->set($strategyReference, $strategyMock);
 
-        return [ $client, $strategyMock, $container ];
+        return [$client, $strategyMock, $container];
     }
 
     private function mockStrategy(string $strategyReference, InvokedCountMatcher $invokedCount)

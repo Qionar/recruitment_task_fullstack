@@ -58,7 +58,7 @@ class ExchangeRatesService
         );
     }
 
-    private function calculateRate(float $baseRate, ?float $provision): ?float
+    private function calculateRate(float $baseRate, $provision): ?float
     {
         if($provision === false) {
             return null;
