@@ -1,3 +1,19 @@
 body {
     background-color: lightgray;
 }
+
+.vertical-center {
+    vertical-align: middle !important;
+}
+
+.buy-indicator {
+    background: rgba(0, 189, 0, 0.7);
+    color: white;
+    font-weight: bold;
+}
+
+.sell-indicator {
+    background: rgba(189, 0, 0, 0.7);
+    color: white;
+    font-weight: bold;
+}
