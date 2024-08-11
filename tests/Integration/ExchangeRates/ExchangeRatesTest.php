@@ -2,14 +2,17 @@
 
 namespace Tests\Integration\ExchangeRates;
 
-use App\DTO\ExchangeRateDTO;
+use App\Services\ExchangeRates\ExchangeRatesService;
 use App\Services\ExchangeRates\Strategies\NbpStrategy;
+use DateTime;
 use PHPUnit\Framework\MockObject\Rule\InvokedCount as InvokedCountMatcher;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Tests\Fixtures\ExchangeRatesFixture;
 
 class ExchangeRatesTest extends WebTestCase
 {
+    const DEFAULT_DATE_ERROR_MESSAGE = 'Invalid date. Expected to be valid timestamp after 01.01.2023 and before today.';
+
     public function test_index_that_return_exchange_rates_with_nbp_provider()
     {
         [$client] = $this->initializeClient(NbpStrategy::class, self::once());
@@ -32,7 +35,7 @@ class ExchangeRatesTest extends WebTestCase
     {
         [$client] = $this->initializeClient(NbpStrategy::class, self::never());
 
-        $client->request('GET', '/api/exchange-rates?byDate=' . 'test-string');
+        $client->request('GET', '/api/exchange-rates?byDate=' . '123');
 
         $this->assertResponseStatusCodeSame(422);
 
@@ -43,7 +46,50 @@ class ExchangeRatesTest extends WebTestCase
         $json = json_decode($response->getContent(), true);
 
         $this->assertArrayHasKey('error', $json);
-        $this->assertStringStartsWith('Invalid date format. Expected valid ISO 8601 format.', $json['error']);
+        $this->assertStringStartsWith(self::DEFAULT_DATE_ERROR_MESSAGE, $json['error']);
+    }
+
+    public function test_index_that_return_error_when_receive_date_after_today()
+    {
+        [$client] = $this->initializeClient(NbpStrategy::class, self::never());
+
+        $invalidTimestamp = (new DateTime())
+            ->modify('+1 day')
+            ->format('U');
+
+        $client->request('GET', '/api/exchange-rates?byDate=' . $invalidTimestamp);
+
+        $this->assertResponseStatusCodeSame(422);
+
+        $response = $client->getResponse();
+
+        $this->assertJson($response->getContent());
+
+        $json = json_decode($response->getContent(), true);
+
+        $this->assertArrayHasKey('error', $json);
+        $this->assertStringStartsWith(self::DEFAULT_DATE_ERROR_MESSAGE, $json['error']);
+    }
+
+    public function test_index_that_return_error_when_receive_date_before_minimal_allowed_date()
+    {
+        [$client] = $this->initializeClient(NbpStrategy::class, self::never());
+
+        $invalidTimestamp = (new DateTime(ExchangeRatesService::MINIMUM_ALLOWED_DATE))
+            ->format('U');
+
+        $client->request('GET', '/api/exchange-rates?byDate=' . $invalidTimestamp);
+
+        $this->assertResponseStatusCodeSame(422);
+
+        $response = $client->getResponse();
+
+        $this->assertJson($response->getContent());
+
+        $json = json_decode($response->getContent(), true);
+
+        $this->assertArrayHasKey('error', $json);
+        $this->assertStringStartsWith(self::DEFAULT_DATE_ERROR_MESSAGE, $json['error']);
     }
 
     public function test_index_that_return_exchange_rates_when_receive_valid_datetime_format()

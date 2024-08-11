@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use DateTime;
 
 class ExchangeRatesController extends AbstractController
 {
@@ -26,16 +27,16 @@ class ExchangeRatesController extends AbstractController
 
     public function index(Request $request): JsonResponse
     {
-        $byDate = $request->query->get('byDate');
+        $date = $this->extractDateFromRequest($request);
 
-        if($byDate && !Date::validateByFormat($byDate)) {
+        if($date && !$this->validateDate($date)) {
             return new JsonResponse([
-                'error' => 'Invalid date format. Expected valid ISO 8601 format.',
+                'error' => 'Invalid date. Expected to be valid timestamp after 01.01.2023 and before today.',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         try {
-            $rates = $this->service->fetchRates($byDate);
+            $rates = $this->service->fetchRates($date ?? null);
 
             return new JsonResponse([
                 'data' => $rates
@@ -46,6 +47,29 @@ class ExchangeRatesController extends AbstractController
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    private function extractDateFromRequest(Request $request): ?DateTime
+    {
+        $timestamp = $request->get('byDate', '');
+        $date = DateTime::createFromFormat(
+            Date::DATE_TIMESTAMP_FORMAT,
+            $timestamp
+        );
+
+        return $date ?: null;
+    }
+
+    private function validateDate($date): bool
+    {
+        if(!$date instanceof DateTime) {
+            return false;
+        }
+
+        $isDateAfterMinimumAllowed = $date > new DateTime($this->service::MINIMUM_ALLOWED_DATE);
+        $isDateAfterOrEqualToday = $date >= new DateTime();
+
+        return $isDateAfterMinimumAllowed === true && $isDateAfterOrEqualToday === false;
     }
 
 }

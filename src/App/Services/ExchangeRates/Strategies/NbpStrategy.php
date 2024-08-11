@@ -25,12 +25,12 @@ class NbpStrategy implements ExchangeRatesStrategyInterface
         $this->baseUrl = $baseUrl;
     }
 
-    public function getExchangeRates(?string $byDate = null): array
+    public function getExchangeRates(?\DateTime $byDate = null): array
     {
         $url = $this->baseUrl . '/exchangerates/tables/A';
 
         if($byDate) {
-            $url .= '/' . $byDate;
+            $url .= '/' . $byDate->format('Y-m-d');
         }
 
         $url .= '?format=json';

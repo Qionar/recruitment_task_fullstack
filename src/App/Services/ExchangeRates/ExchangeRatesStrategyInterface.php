@@ -2,13 +2,15 @@
 
 namespace App\Services\ExchangeRates;
 
+use DateTime;
+
 interface ExchangeRatesStrategyInterface
 {
 
     /**
-     * @param string|null $byDate
+     * @param DateTime|null $byDate
      * @return array
      */
-    public function getExchangeRates(?string $byDate = null): array;
+    public function getExchangeRates(?DateTime $byDate = null): array;
 
 }

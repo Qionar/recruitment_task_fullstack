@@ -20,6 +20,11 @@ class ExchangeRatesService
      */
     private const DEFAULT_ROUND_PRECISION = 2;
 
+    /**
+     * @var string
+     */
+    public const MINIMUM_ALLOWED_DATE = '2023-01-01';
+
     public function __construct(
         ExchangeRatesStrategyInterface $strategy,
         array $availableCodes
@@ -28,7 +33,7 @@ class ExchangeRatesService
         $this->availableCodes = $availableCodes;
     }
 
-    public function fetchRates(?string $byDate = null): array
+    public function fetchRates(?\DateTime $byDate = null): array
     {
         $rates = $this->strategy->getExchangeRates($byDate);
 
