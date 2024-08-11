@@ -3,7 +3,7 @@
 import React, {Component} from 'react';
 import {Route, Redirect, Switch, Link} from 'react-router-dom';
 import SetupCheck from "./SetupCheck";
-import ExchangeRates from "./ExchangeRates";
+import ExchangeRates from "./ExchangeRates/ExchangeRates";
 
 class Home extends Component {
 
